@@ -1,29 +1,33 @@
-# This workflow will build a golang project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
-
-name: "Go"
+name: Generate Go Sum
 
 on:
   push:
-    branches: [ "master" ]
-  pull_request:
-    branches: [ "master" ]
+    branches:
+      - main
 
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ "ubuntu-latest", "windows-latest", "macos-latest" ]
-        go: [ "1.21.x", "1.22.x" ]
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
+
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-go@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
       with:
-        go-version: ${{ matrix.go }}
-    - run: go version
-    - name: Build
-      run: go build -v ./...
-    - name: Test
-      run: go test -v ./...
+        go-version: '1.16'
+
+    - name: Create go.mod file
+      run: |
+        echo "module temp-go-project" > go.mod
+        echo "go 1.16" >> go.mod
+        echo "require (" >> go.mod
+        echo "    github.com/tritu/utls v1.6.7" >> go.mod
+        echo ")" >> go.mod
+
+    - name: Run go mod tidy
+      run: go mod tidy
+
+    - name: Display go.sum
+      run: cat go.sum
